@@ -7,10 +7,6 @@ class StockData:
         #get data on this ticker. This creates a ticker object
         self.stockData = yf.Ticker(self.quote)
 
-    #Converts a date object to a string that can be used for historical data
-    def dateToString(self, date):
-        return str(date)
-
     def getHistoricalPrices(self, period='1d', start='2010-1-1', end='2020-1-25'):
         #get the historical prices for this ticker
         self.historicalData = self.stockData.history(period=period, start=start, end=end)
