@@ -6,6 +6,7 @@ import utils.stockMetricCalculation as stockMetrics
 #This will work as follows:
 #1. For a certain stock, determine how the stock behaves one month later.
 #2. The one month later is the label. Everything preceding the 1 month will be the data being classified
+from utils.timeSeriesMetricsCalculation import TimeSeriesMetricsCalculation
 
 stock = stockData.StockData('MSFT')
 
@@ -30,6 +31,10 @@ for i in range(0, 100):
     # Generate Data for Past
     print("Retrieve Past Data")
     pastData = stock.getHistoricalPrices('1d', start, end)
+    metricCalculation = TimeSeriesMetricsCalculation(pastData)
+    featureAverages = metricCalculation.movingAverages()
+    autoCorrelations = metricCalculation.autocorrelation(), metricCalculation.autocorrelation(2), metricCalculation.autocorrelation(5), metricCalculation.autocorrelation(10)
+    featureVolumeAverages = metricCalculation.movingAverageVolume()
 
     # Generate Data for one month in the future
     monthLaterMonth = endMonth + 1
@@ -48,7 +53,7 @@ for i in range(0, 100):
     highestDecrease = metrics.highestDecrease()
     change = metrics.change()
     score = metrics.score()
-    print(avgPrice, highestIncrease, highestDecrease, change, score)
+    labels = [avgPrice, highestIncrease, highestDecrease, change, score]
 
     #Increment month for start
     if startDate.month == 12:
