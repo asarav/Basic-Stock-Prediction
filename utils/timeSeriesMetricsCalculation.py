@@ -22,12 +22,3 @@ class TimeSeriesMetricsCalculation:
         last15 = self.data.tail(15)["Volume"].mean()
         last5 = self.data.tail(5)["Volume"].mean()
         return last5, last15, last100, last365
-
-    def differenceFromSandP(self):
-        return
-
-    def differenceFromDOW(self):
-        return
-
-    def differenceFromNASDAQ(self):
-        return

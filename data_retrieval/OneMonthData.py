@@ -2,11 +2,12 @@ import data_retrieval.stockData as stockData
 import datetime
 from datetime import date
 import utils.stockMetricCalculation as stockMetrics
+from data_retrieval.IndexData import IndexData
+from utils.timeSeriesMetricsCalculation import TimeSeriesMetricsCalculation
 
 #This will work as follows:
 #1. For a certain stock, determine how the stock behaves one month later.
 #2. The one month later is the label. Everything preceding the 1 month will be the data being classified
-from utils.timeSeriesMetricsCalculation import TimeSeriesMetricsCalculation
 
 stock = stockData.StockData('MSFT')
 
@@ -35,6 +36,8 @@ for i in range(0, 100):
     featureAverages = metricCalculation.movingAverages()
     autoCorrelations = metricCalculation.autocorrelation(), metricCalculation.autocorrelation(2), metricCalculation.autocorrelation(5), metricCalculation.autocorrelation(10)
     featureVolumeAverages = metricCalculation.movingAverageVolume()
+
+    indexPastData = IndexData('1d', start, end)
 
     # Generate Data for one month in the future
     monthLaterMonth = endMonth + 1

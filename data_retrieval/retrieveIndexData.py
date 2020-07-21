@@ -1,1 +1,0 @@
-#File to retrieve data from S&P, DOW, and NASDAQ based on period data
