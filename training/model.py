@@ -1,26 +1,28 @@
 import pandas as pd
 from sklearn import svm
 from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import Ridge
 import matplotlib.pyplot as plt
 from sklearn.metrics import explained_variance_score, max_error, mean_squared_error
 from sklearn.model_selection import train_test_split, cross_validate
 
 
 class Model:
-    def __init__(self, featureData, labelData, currentMonthData, quote='MFST'):
+    def __init__(self, featureData, labelData, currentMonthData, quote='MFST', classifier=LinearRegression):
         self.features = featureData
         self.labels = labelData['finalPrice']
         self.quote = quote
         self.currentMonth = currentMonthData
+        self.classifier = classifier
 
     def train(self):
-        self.clf = LinearRegression()
+        self.clf = self.classifier()
         self.clf.fit(self.features, self.labels)
 
     def trainWithCrossVal(self):
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.features, self.labels,
                                                                                 test_size=0.25, random_state=0)
-        self.clf = LinearRegression()
+        self.clf = self.classifier()
         results = cross_validate(self.clf, self.features, self.labels, cv=7, verbose=1,
                            scoring=['explained_variance', 'max_error', "neg_mean_squared_error"], n_jobs=-1)
         self.clf.fit(self.X_train, self.y_train)
