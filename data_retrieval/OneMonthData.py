@@ -12,8 +12,8 @@ import pandas as pd
 class OneMonthData:
     def __init__(self, quote='MSFT'):
         stock = stockData.StockData(quote)
-        yearDifference = 15
-        startDate = datetime.date(2000, 1, 1)
+        yearDifference = 10
+        startDate = datetime.date(2005, 1, 1)
         featureFrame = pd.DataFrame(columns=['avg365',
                                              'avg100',
                                              'avg15',
@@ -31,7 +31,7 @@ class OneMonthData:
                                              'score',
                                              'change'])
 
-        for i in range(0, 100):
+        for i in range(0, 200):
             start = str(startDate)
             startYear = startDate.year
             startMonth = startDate.month
@@ -95,7 +95,7 @@ class OneMonthData:
                 monthLaterYear = endYear + 1
 
             oneMonthLater = str(datetime.date(monthLaterYear, monthLaterMonth, 1))
-            print("Retrieve One Month Later " + oneMonthLater)
+            #print("Retrieve One Month Later " + oneMonthLater)
 
             oneMonthLaterData = stock.getHistoricalPrices('1d', end, oneMonthLater)
 

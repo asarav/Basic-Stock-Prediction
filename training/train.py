@@ -3,18 +3,23 @@ import training.model as model
 import data_retrieval.tickerSymbol as tickerSymbol
 import data_retrieval.OneMonthData as oneMonthData
 
-tickerSymbol = tickerSymbol.TickerSymbols()
-print(str(len(tickerSymbol.symbols)) + " total symbols")
-oneMonthData = oneMonthData.OneMonthData(tickerSymbol.symbols[0])
+ticker = tickerSymbol.TickerSymbols()
+print(str(len(ticker.symbols)) + " total symbols")
+for symbol in ticker.symbols:
+    try:
+        print(symbol)
+        data = oneMonthData.OneMonthData(symbol)
 
-features = oneMonthData.features
-labels = oneMonthData.labels
+        features = data.features
+        labels = data.labels
 
-print(features.tail())
-print(labels.tail())
+        #print(features.tail())
+        #print(labels.tail())
 
-model = model.Model(features, labels, oneMonthData.currentData, tickerSymbol.symbols[0])
-results = model.trainWithCrossVal()
-print(results)
-model.comparePredictions()
-print(model.predictCurrentMonth())
+        trainedModel = model.Model(features, labels, data.currentData, symbol)
+        results = trainedModel.trainWithCrossVal()
+        print(results)
+        trainedModel.comparePredictions()
+        print(trainedModel.predictCurrentMonth())
+    except:
+        print("This is either a newer company or some sort of error occured")
