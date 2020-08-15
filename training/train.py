@@ -9,9 +9,10 @@ import data_retrieval.stockData as stockData
 
 
 class Train:
-    def __init__(self, quote=None):
+    def __init__(self, quote=None, printGraph=False):
         ticker = tickerSymbol.TickerSymbols()
         print(str(len(ticker.symbols)) + " total symbols")
+        self.printGraph = printGraph
         if quote is None:
             for symbol in ticker.symbols:
                 self.runTraining(symbol)
@@ -37,11 +38,12 @@ class Train:
             info = stock.info()
 
             # Determine if there will be a guaranteed profit if the stock is bought now
-            print(info["previousClose"])
-            print(trainedModel.predictCurrentMonth())
-            trainedModel.comparePredictions()
+            if info["previousClose"] < trainedModel.predictCurrentMonth():
+                print(info["previousClose"], trainedModel.predictCurrentMonth())
+                print(trainedModel.predictCurrentMonth()/info["previousClose"])
+                if self.printGraph:
+                    trainedModel.comparePredictions()
         except Exception as e:
-            print("This is either a newer company or some sort of error occured")
             if "Data doesn't exist for startDate":
                 print("This is a newer company")
             else:
