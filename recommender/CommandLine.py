@@ -1,18 +1,16 @@
-import sys
 import training.train as Train
 
-import sklearn.utils._cython_blas
-import sklearn.neighbors.typedefs
-import sklearn.neighbors.quad_tree
-import sklearn.tree
-import sklearn.tree._utils
-
 # main.py
-if __name__ == "__main__":
-    print(f"Arguments count: {len(sys.argv)}")
-    for i, arg in enumerate(sys.argv):
-        print(f"Argument {i:>6}: {arg}")
-        input('Press ENTER to exit')
-
-    # Generate a Buy or Sell Recommendation based on current properties of the stock
-train = Train.Train()
+all = input('Process all Stock Tickers? (Y/N)\n')
+displayGraph = input('Display Graph? (Y/N)\n')
+showGraph = False
+if displayGraph is "Y":
+    showGraph = True
+if all is "N":
+    ticker = input('Enter Stock Ticker\n')
+    print("Processing")
+    train = Train.Train(quote=ticker, printGraph=showGraph)
+else:
+    print("Processing")
+    train = Train.Train(printGraph=showGraph)
+input('Press ENTER to exit\n')
