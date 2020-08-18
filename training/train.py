@@ -70,7 +70,7 @@ class Train:
                 if self.callback is not None:
                     self.callback()
         except Exception as e:
-            if "Data doesn't exist for startDate":
+            if "Data doesn't exist for startDate" in str(e):
                 print("This is a newer company")
             else:
                 print(e)
