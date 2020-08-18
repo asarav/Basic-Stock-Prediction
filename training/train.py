@@ -17,7 +17,7 @@ class Train:
             ticker = tickerSymbol.TickerSymbols()
             print(str(len(ticker.symbols)) + " total symbols")
             for symbol in ticker.symbols:
-                print(Fore.BLUE, "Processing: ", symbol)
+                print(Fore.BLUE + "Processing: ", symbol)
                 print(Style.RESET_ALL)
                 self.runTraining(symbol)
         else:
@@ -30,7 +30,7 @@ class Train:
 
             features = data.features
             labels = data.labels
-            
+
             print("Training Model on Data")
             trainedModel = model.Model(features, labels, data.currentData, symbol, LinearRegression)
             results = trainedModel.trainWithCrossVal()
@@ -52,9 +52,18 @@ class Train:
             varianceScore = results["variance_score"]
 
             print("Error Margin: ", rootMSE)
-            print("Predicted Floor: ", self.output["Future Price"] - rootMSE)
-            print("Predicted Ceiling: ", self.output["Future Price"] + rootMSE)
+            floor = self.output["Future Price"] - rootMSE
+            ceiling = self.output["Future Price"] + rootMSE
+            print("Predicted Floor: ", floor)
+            print("Predicted Ceiling: ", ceiling)
             print("Variance Score: ", varianceScore)
+
+            if floor > self.output["CurrentPrice"]:
+                print(Fore.GREEN + "Predicted Gains GUARANTEED")
+                print(Style.RESET_ALL)
+            if ceiling < self.output["CurrentPrice"]:
+                print(Fore.RED + "Predicted Losses GUARANTEED")
+                print(Style.RESET_ALL)
 
             if self.printGraph:
                 trainedModel.comparePredictions()
