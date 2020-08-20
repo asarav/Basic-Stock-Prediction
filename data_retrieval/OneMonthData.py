@@ -12,8 +12,9 @@ import pandas as pd
 class OneMonthData:
     def __init__(self, quote='MSFT'):
         stock = stockData.StockData(quote)
-        yearDifference = 10
-        startDate = datetime.date(2005, 1, 1)
+        stock.getAllHistory()
+        startDate, yearDifference = stock.suggestedStartAndDuration()
+
         featureFrame = pd.DataFrame(columns=['avg365',
                                              'avg100',
                                              'avg15',
@@ -31,7 +32,7 @@ class OneMonthData:
                                              'score',
                                              'change'])
 
-        for i in range(0, 200):
+        for i in range(0, 1200):
             start = str(startDate)
             startYear = startDate.year
             startMonth = startDate.month
@@ -42,7 +43,8 @@ class OneMonthData:
             end = str(datetime.date(endYear, endMonth, 1))
 
             # Generate Data for Past
-            pastData = stock.getHistoricalPrices('1d', start, end)
+            #pastData = stock.getHistoricalPrices('1d', start, end)
+            pastData = stock.getHistoricalPricesSubset('1d', start, end)
             metricCalculation = TimeSeriesMetricsCalculation(pastData)
             featureAverages = metricCalculation.movingAverages()
             autoCorrelations = metricCalculation.autocorrelation(), metricCalculation.autocorrelation(2), metricCalculation.autocorrelation(5), metricCalculation.autocorrelation(10)
@@ -95,9 +97,9 @@ class OneMonthData:
                 monthLaterYear = endYear + 1
 
             oneMonthLater = str(datetime.date(monthLaterYear, monthLaterMonth, 1))
-            #print("Retrieve One Month Later " + oneMonthLater)
 
-            oneMonthLaterData = stock.getHistoricalPrices('1d', end, oneMonthLater)
+            #oneMonthLaterData = stock.getHistoricalPrices('1d', end, oneMonthLater)
+            oneMonthLaterData = stock.getHistoricalPricesSubset('1d', end, oneMonthLater)
 
             metrics = stockMetrics.StockMetricCalculation(oneMonthLaterData)
             avgPrice = metrics.avgPrice()
