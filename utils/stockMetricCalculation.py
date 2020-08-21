@@ -42,6 +42,8 @@ class StockMetricCalculation:
         change = self.change()
         highestIncrease = self.highestIncrease()
         highestDecrease = self.highestDecrease()
-        normalizedAvg = self.avgPrice()/self.getFirstRow()
+        normalizedAvg = 0
+        if self.getFirstRow() > 0:
+            normalizedAvg = self.avgPrice()/self.getFirstRow()
         return normalizedAvg * (change +  highestIncrease + (highestDecrease * 0.5))
 

@@ -11,6 +11,16 @@ if all is "N":
     print("Processing")
     train = Train.Train(quote=ticker, printGraph=showGraph)
 else:
+    sandp = input('Process Just S&P500? (Y/N)\n')
+    processSANDP = False
+    if sandp is "Y":
+        processSANDP = True
+
+    exportCSV = False
+    outputToExcel = input('Output Results to CSV? (Y/N)\n')
+    if outputToExcel is "Y":
+        exportCSV = True
+
     print("Processing")
-    train = Train.Train(printGraph=showGraph)
+    train = Train.Train(printGraph=showGraph, useSAndP=processSANDP, outputExcel=exportCSV)
 input('Press ENTER to exit\n')
