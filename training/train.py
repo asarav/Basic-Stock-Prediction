@@ -1,6 +1,6 @@
 import training.model as model
 import data_retrieval.tickerSymbol as tickerSymbol
-import data_retrieval.OneMonthData as oneMonthData
+import data_retrieval.MonthLaterData as oneMonthData
 from sklearn.linear_model import LinearRegression
 import data_retrieval.stockData as stockData
 import math
@@ -10,10 +10,11 @@ import pandas as pd
 
 class Train:
     output = {}
-    def __init__(self, quote=None, printGraph=False, callback=None, outputExcel=False, useSAndP=False):
+    def __init__(self, quote=None, printGraph=False, callback=None, outputExcel=False, useSAndP=False, monthsLater=1):
         self.printGraph = printGraph
         self.callback = callback
         self.outpuExcel = outputExcel
+        self.monthsLater = monthsLater
         excel = pd.DataFrame(columns=['Symbol',
                                         'Current Price',
                                         'Future Price',
@@ -47,7 +48,7 @@ class Train:
             #print(start.hour, ':', start.minute, ':', start.second, '.', start.microsecond)
 
             print("Retrieving Stock Data")
-            data = oneMonthData.OneMonthData(symbol)
+            data = oneMonthData.MonthLaterData(symbol, monthsLater=self.monthsLater)
 
             features = data.features
             labels = data.labels

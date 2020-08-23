@@ -9,8 +9,9 @@ import pandas as pd
 #This will work as follows:
 #1. For a certain stock, determine how the stock behaves one month later.
 #2. The one month later is the label. Everything preceding the 1 month will be the data being classified
-class OneMonthData:
-    def __init__(self, quote='MSFT'):
+class MonthLaterData:
+    #Keep months later below 1 year
+    def __init__(self, quote='MSFT', monthsLater=1):
         stock = stockData.StockData(quote)
         stock.getAllHistory()
         startDate, yearDifference = stock.suggestedStartAndDuration()
@@ -34,10 +35,8 @@ class OneMonthData:
 
         for i in range(0, 1200):
             start = str(startDate)
-            startYear = startDate.year
-            startMonth = startDate.month
 
-            endMonth = startMonth
+            endMonth = startDate.month
             endYear = startDate.year + yearDifference
 
             end = str(datetime.date(endYear, endMonth, 1))
@@ -89,43 +88,43 @@ class OneMonthData:
 
             #indexPastData = IndexData('1d', start, end)
 
-            # Generate Data for one month in the future
-            monthLaterMonth = endMonth + 1
+            # Generate Data for x months in the future
+            monthLaterMonth = endMonth + monthsLater
             monthLaterYear = endYear
             if monthLaterMonth > 12:
-                monthLaterMonth = 1
+                monthLaterMonth = monthLaterMonth - 12
                 monthLaterYear = endYear + 1
 
-            oneMonthLater = str(datetime.date(monthLaterYear, monthLaterMonth, 1))
+            monthLater = str(datetime.date(monthLaterYear, monthLaterMonth, 1))
 
-            #oneMonthLaterData = stock.getHistoricalPrices('1d', end, oneMonthLater)
-            oneMonthLaterData = stock.getHistoricalPricesSubset('1d', end, oneMonthLater)
+            if not(monthLaterYear > date.today().year or (monthLaterYear == date.today().year and monthLaterMonth > date.today().month )):
+                oneMonthLaterData = stock.getHistoricalPricesSubset('1d', end, monthLater)
 
-            metrics = stockMetrics.StockMetricCalculation(oneMonthLaterData)
-            avgPrice = metrics.avgPrice()
-            highestIncrease = metrics.highestIncrease()
-            highestDecrease = metrics.highestDecrease()
-            change = metrics.change()
-            score = metrics.score()
-            finalPrice = metrics.getLastRow()
-            labels = [avgPrice, highestIncrease, highestDecrease, change, score, finalPrice]
+                metrics = stockMetrics.StockMetricCalculation(oneMonthLaterData)
+                avgPrice = metrics.avgPrice()
+                highestIncrease = metrics.highestIncrease()
+                highestDecrease = metrics.highestDecrease()
+                change = metrics.change()
+                score = metrics.score()
+                finalPrice = metrics.getLastRow()
+                labels = [avgPrice, highestIncrease, highestDecrease, change, score, finalPrice]
+
+                df3 = pd.DataFrame(data=[[finalPrice,
+                                          score,
+                                          change
+                                          ]],
+                                   columns=['finalPrice',
+                                            'score',
+                                            'change'])
+
+                featureFrame = pd.concat([featureFrame, df2])
+                labelFrame = pd.concat([labelFrame, df3])
 
             #Increment month for start
             if startDate.month == 12:
                 startDate = datetime.date(startDate.year + 1, 1, 1)
             else:
                 startDate = datetime.date(startDate.year, startDate.month + 1, 1)
-
-            df3 = pd.DataFrame(data=[[finalPrice,
-                                    score,
-                                    change
-                                ]],
-                               columns=['finalPrice',
-                                        'score',
-                                        'change'])
-
-            featureFrame = pd.concat([featureFrame, df2])
-            labelFrame = pd.concat([labelFrame, df3])
 
         #featureFrame.to_csv(quote + 'features.csv')
         #labelFrame.to_csv(quote + 'labels.csv')
