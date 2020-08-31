@@ -20,6 +20,7 @@ class Train:
                                         'Future Price',
                                         'Percent Increase',
                                         'Error',
+                                        'Error Percentage',
                                         'Floor',
                                         'Ceiling',
                                         'Variance Score'])
@@ -79,8 +80,10 @@ class Train:
             varianceScore = results["variance_score"]
 
             print("Error Margin: ", rootMSE)
+            errorPercentage = 0
             if self.output["CurrentPrice"] > 0:
-                print("Error Percentage: ", rootMSE/self.output["CurrentPrice"])
+                errorPercentage = (rootMSE / self.output["CurrentPrice"]) * 100
+                print("Error Percentage: ", errorPercentage)
             floor = self.output["Future Price"] - rootMSE
             ceiling = self.output["Future Price"] + rootMSE
             print("Predicted Floor: ", floor)
@@ -102,12 +105,13 @@ class Train:
                 trainedModel.comparePredictions()
                 if self.callback is not None:
                     self.callback()
-            return pd.DataFrame(data=[[symbol, self.output["CurrentPrice"], self.output["Future Price"], self.output["Percent Increase"], rootMSE, floor, ceiling, varianceScore]],
+            return pd.DataFrame(data=[[symbol, self.output["CurrentPrice"], self.output["Future Price"], self.output["Percent Increase"], rootMSE, errorPercentage, floor, ceiling, varianceScore]],
                                columns=['Symbol',
                                         'Current Price',
                                         'Future Price',
                                         'Percent Increase',
                                         'Error',
+                                        'Error Percentage',
                                         'Floor',
                                         'Ceiling',
                                         'Variance Score'])
