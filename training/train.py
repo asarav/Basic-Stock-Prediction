@@ -38,7 +38,7 @@ class Train:
                 if data is not None and outputExcel:
                     excel = pd.concat([excel, data])
             if outputExcel:
-                excel.to_csv("Predictions.csv")
+                excel.to_csv("Predictions " + str(monthsLater) + ".csv")
 
         else:
             self.runTraining(quote)
