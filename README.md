@@ -1,5 +1,5 @@
 # Basic-Stock-Prediction
-A simplistic attempt at applying machine learning to stock information
+A simplistic attempt at applying machine learning to stock information that works surprisingly well for long term investments.
 
 # Output to exe
 PyInstaller is used.
