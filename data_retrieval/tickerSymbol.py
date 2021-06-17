@@ -13,4 +13,5 @@ class TickerSymbols:
 				self.symbols.append(decoded_line.split()[0])
 
 		table = pd.read_html('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies')
-		self.sAndP = table[0]["Symbol"].tolist()
+		#0 is the index of the symbol
+		self.sAndP = table[0][0].tolist()
