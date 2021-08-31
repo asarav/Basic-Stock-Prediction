@@ -10,7 +10,7 @@ import pandas as pd
 
 class Train:
     output = {}
-    def __init__(self, quote=None, printGraph=False, callback=None, outputExcel=False, useSAndP=False, monthsLater=1):
+    def __init__(self, quote=None, printGraph=False, callback=None, outputExcel=False, useSAndP=False, useRussell1000=False, monthsLater=1):
         self.printGraph = printGraph
         self.callback = callback
         self.outpuExcel = outputExcel
@@ -29,14 +29,18 @@ class Train:
             symbols = ticker.symbols
             if useSAndP:
                 symbols = ticker.sAndP
+            elif useRussell1000:
+                symbols = ticker.russell1000
             print(str(len(symbols)) + " total symbols")
-
+            count = 0
             for symbol in symbols:
+                print(Fore.YELLOW + "PROGRESS: ", count, len(symbols), (count/len(symbols)))
                 print(Fore.BLUE + "Processing: ", symbol)
                 print(Style.RESET_ALL)
                 data = self.runTraining(symbol)
                 if data is not None and outputExcel:
                     excel = pd.concat([excel, data])
+                count = count + 1
             if outputExcel:
                 excel.to_csv("Predictions " + str(monthsLater) + ".csv")
 
