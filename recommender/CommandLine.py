@@ -14,6 +14,7 @@ if all is "N" or all is "n":
 else:
     sandp = input('Process Just S&P500? (Y/N)\n')
     processSANDP = False
+    processRussell1000 = False
     if sandp is "Y" or sandp is "y":
         processSANDP = True
     else:
