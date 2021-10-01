@@ -24,7 +24,7 @@ else:
 
     exportCSV = False
     outputToExcel = input('Output Results to CSV? (Y/N)\n')
-    if outputToExcel is "Y":
+    if outputToExcel is "Y" or outputToExcel is "y":
         exportCSV = True
 
     print("Processing")
