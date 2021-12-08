@@ -5,7 +5,7 @@ from sklearn.linear_model import Ridge
 import matplotlib.pyplot as plt
 from sklearn.metrics import explained_variance_score, max_error, mean_squared_error
 from sklearn.model_selection import train_test_split, cross_validate
-
+import streamlit as st
 
 class Model:
     def __init__(self, featureData, labelData, currentMonthData, quote='MFST', classifier=LinearRegression):
@@ -39,14 +39,18 @@ class Model:
                        }
         return test_results
 
-    def comparePredictions(self):
+    def comparePredictions(self, streamlit=False):
         predictions = self.clf.predict(self.features)
 
         plt.plot(self.labels.values, label="Labels", marker='o')
         plt.plot(predictions, label="Predictions", marker='o')
         plt.legend(loc="upper left")
         plt.title('Labels vs Predictions for ' + self.quote)
-        plt.show()
+        if not streamlit:
+            plt.show()
+        else:
+            fig = plt.gcf()
+            st.pyplot(fig)
 
     def predictCurrentMonth(self):
         predictions = self.clf.predict(self.currentMonth)

@@ -10,11 +10,12 @@ import pandas as pd
 
 class Train:
     output = {}
-    def __init__(self, quote=None, printGraph=False, callback=None, outputExcel=False, useSAndP=False, useRussell1000=False, monthsLater=1):
+    def __init__(self, quote=None, printGraph=False, callback=None, outputExcel=False, useSAndP=False, useRussell1000=False, monthsLater=1, streamlit=False):
         self.printGraph = printGraph
         self.callback = callback
         self.outpuExcel = outputExcel
         self.monthsLater = monthsLater
+        self.streamlit = streamlit
         excel = pd.DataFrame(columns=['Symbol',
                                         'Current Price',
                                         'Future Price',
@@ -106,7 +107,7 @@ class Train:
             #print(end.hour, ':', end.minute, ':', end.second, '.', end.microsecond)
 
             if self.printGraph:
-                trainedModel.comparePredictions()
+                trainedModel.comparePredictions(streamlit=self.streamlit)
                 if self.callback is not None:
                     self.callback()
             return pd.DataFrame(data=[[symbol, self.output["CurrentPrice"], self.output["Future Price"], self.output["Percent Increase"], rootMSE, errorPercentage, floor, ceiling, varianceScore]],
