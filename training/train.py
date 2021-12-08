@@ -99,9 +99,11 @@ class Train:
             if floor > self.output["CurrentPrice"]:
                 print(Fore.GREEN + "Predicted Gains GUARANTEED")
                 print(Style.RESET_ALL)
+                self.output["Message"] = "Predicted GAINS Highly Likely given Error values"
             if ceiling < self.output["CurrentPrice"]:
                 print(Fore.RED + "Predicted Losses GUARANTEED")
                 print(Style.RESET_ALL)
+                self.output["Message"] = "Predicted LOSSES Highly Likely given Error values"
 
             #end = datetime.now()
             #print(end.hour, ':', end.minute, ':', end.second, '.', end.microsecond)
