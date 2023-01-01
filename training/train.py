@@ -63,6 +63,8 @@ class Train:
 
             trainedModel = model.Model(features, labels, data.currentData, symbol, LinearRegression)
 
+            print("Model Trained")
+
             results = trainedModel.trainWithCrossVal()
 
             self.output["CrossVal Results"] = results
