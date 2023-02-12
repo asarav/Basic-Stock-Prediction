@@ -66,18 +66,14 @@ class Train:
             print("Model Trained")
 
             results = trainedModel.trainWithCrossVal()
-
             self.output["CrossVal Results"] = results
             stock = stockData.StockData(symbol)
-
             info = stock.info()
-
-            self.output["CurrentPrice"] = info["previousClose"]
+            self.output["CurrentPrice"] = info["previous_close"]
             self.output["Future Price"] = trainedModel.predictCurrentMonth()[0]
-
             self.output["Percent Increase"] = 0
-            if info["previousClose"] > 0:
-                self.output["Percent Increase"] = (trainedModel.predictCurrentMonth()[0]/info["previousClose"] - 1)*100
+            if info["previous_close"] > 0:
+                self.output["Percent Increase"] = (trainedModel.predictCurrentMonth()[0]/info["previous_close"] - 1)*100
             print("Current Price: ", self.output["CurrentPrice"])
             print("Predicted Price: ", self.output["Future Price"])
             print("Predicted Percent Change in Price: ", self.output["Percent Increase"], "%")

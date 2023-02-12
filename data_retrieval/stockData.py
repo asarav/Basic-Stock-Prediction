@@ -55,7 +55,7 @@ class StockData:
 
     # https://github.com/ranaroussi/yfinance/pull/371
     def info(self):
-        return self.stockData.info
+        return self.stockData.fast_info
 
     def events(self):
         return self.stockData.calendar
