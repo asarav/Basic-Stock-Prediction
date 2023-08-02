@@ -5,9 +5,9 @@ numberOfMonths = int(input("Choose Number of Months into the future to predict (
 all = input('Process all Stock Tickers? (Y/N)\n')
 displayGraph = input('Display Graph? (Y/N)\n')
 showGraph = False
-if displayGraph is "Y" or displayGraph is "y":
+if displayGraph == "Y" or displayGraph == "y":
     showGraph = True
-if all is "N" or all is "n":
+if all == "N" or all == "n":
     ticker = input('Enter Stock Ticker\n')
     print("Processing")
     train = Train.Train(quote=ticker, printGraph=showGraph, monthsLater=numberOfMonths)
@@ -15,16 +15,16 @@ else:
     sandp = input('Process Just S&P500? (Y/N)\n')
     processSANDP = False
     processRussell1000 = False
-    if sandp is "Y" or sandp is "y":
+    if sandp == "Y" or sandp == "y":
         processSANDP = True
     else:
         russell1000 = input('Process Just Russell 1000? (Y/N)\n')
-        if russell1000 is "Y" or russell1000 is "y":
+        if russell1000 == "Y" or russell1000 == "y":
             processRussell1000 = True
 
     exportCSV = False
     outputToExcel = input('Output Results to CSV? (Y/N)\n')
-    if outputToExcel is "Y" or outputToExcel is "y":
+    if outputToExcel == "Y" or outputToExcel == "y":
         exportCSV = True
 
     print("Processing")
