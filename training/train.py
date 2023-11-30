@@ -1,3 +1,5 @@
+import os
+
 import training.model as model
 import data_retrieval.tickerSymbol as tickerSymbol
 import data_retrieval.MonthLaterData as oneMonthData
@@ -6,6 +8,7 @@ import data_retrieval.stockData as stockData
 import math
 from colorama import Fore, Back, Style
 from datetime import datetime
+from datetime import date
 import pandas as pd
 
 class Train:
@@ -13,7 +16,7 @@ class Train:
     def __init__(self, quote=None, printGraph=False, callback=None, outputExcel=False, useSAndP=False, useRussell1000=False, monthsLater=1, streamlit=False):
         self.printGraph = printGraph
         self.callback = callback
-        self.outpuExcel = outputExcel
+        self.outputExcel = outputExcel
         self.monthsLater = monthsLater
         self.streamlit = streamlit
         excel = pd.DataFrame(columns=['Symbol',
@@ -43,7 +46,13 @@ class Train:
                     excel = pd.concat([excel, data])
                 count = count + 1
             if outputExcel:
-                excel.to_csv("Predictions " + str(monthsLater) + ".csv")
+                currentDate = date.today()
+                subDir = currentDate.strftime('%b %d %Y')
+                outdir = f'../resources/Outputs/{subDir}/'
+                print(f"Outputing to csv {outdir} {monthsLater}")
+                if not os.path.exists(outdir):
+                    os.mkdir(outdir)
+                excel.to_csv(f"{outdir}Predictions {monthsLater}.csv")
 
         else:
             self.runTraining(quote)

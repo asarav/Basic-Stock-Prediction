@@ -4,7 +4,12 @@ import pandas as pd
 class TickerSymbols:
 	def __init__(self):
 		url = "https://www.sec.gov/include/ticker.txt"
-		file = urllib.request.urlopen(url)
+		heads = {'Host': 'www.sec.gov', 'Connection': 'close',
+				 'Accept': 'application/json, text/javascript, */*; q=0.01', 'X-Requested-With': 'XMLHttpRequest',
+				 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36',
+				 }
+		request = urllib.request.Request(url=url, headers=heads)
+		file = urllib.request.urlopen(request)
 		self.symbols = []
 		for line in file:
 			decoded_line = line.decode("utf-8")
