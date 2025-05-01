@@ -38,7 +38,7 @@ class Train:
             print(str(len(symbols)) + " total symbols")
             count = 0
             for symbol in symbols:
-                print(Fore.YELLOW + "PROGRESS: ", count, len(symbols), (count/len(symbols)))
+                print(Fore.YELLOW + "PROGRESS: ", count, len(symbols), (count/len(symbols)), monthsLater)
                 print(Fore.BLUE + "Processing: ", symbol)
                 print(Style.RESET_ALL)
                 data = self.runTraining(symbol)
