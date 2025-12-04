@@ -27,6 +27,6 @@ class TickerSymbols:
         response.raise_for_status()
 
         table = pd.read_html(response.text)
-        self.sAndP = table[0]["Symbol"].tolist()
+        self.sAndP = table[1]["Symbol"].tolist()
 
         self.russell1000 = pd.read_csv("../resources/Russell1000.csv")["Symbol"].tolist()
