@@ -1,6 +1,10 @@
+import socket
+from pathlib import Path
+
 import requests
 import pandas as pd
 import urllib.request
+import urllib.error
 
 class TickerSymbols:
     def __init__(self):
@@ -13,7 +17,15 @@ class TickerSymbols:
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36',
         }
         request = urllib.request.Request(url=url, headers=heads)
-        file = urllib.request.urlopen(request)
+
+        try:
+            file = urllib.request.urlopen(request, timeout=10)
+        except (urllib.error.URLError,
+                    urllib.error.HTTPError,
+                    socket.timeout,
+                    TimeoutError):
+            fallback_path = Path(Path(__file__).parent).parent / "utils" / "ticker.txt"
+            file = open(fallback_path, "rb")  # binary mode to match urlopen
 
         self.symbols = []
         for line in file:
