@@ -16,22 +16,29 @@ class MonthLaterData:
         stock.getAllHistory()
         startDate, yearDifference = stock.suggestedStartAndDuration()
 
-        featureFrame = pd.DataFrame(columns=['avg365',
-                                             'avg100',
-                                             'avg15',
-                                             'avg5',
-                                             'autocorrelation1',
-                                             'autocorrelation2',
-                                             'autocorrelation5',
-                                             'autocorrelation10',
-                                             'volAvg365',
-                                             'volAvg100',
-                                             'volAvg15',
-                                             'volAvg5',
-                                             'initialPrice'])
-        labelFrame = pd.DataFrame(columns=['finalPrice',
-                                             'score',
-                                             'change'])
+        feature_columns = [
+            'avg365',
+            'avg100',
+            'avg15',
+            'avg5',
+            'autocorrelation1',
+            'autocorrelation2',
+            'autocorrelation5',
+            'autocorrelation10',
+            'volAvg365',
+            'volAvg100',
+            'volAvg15',
+            'volAvg5',
+            'initialPrice',
+        ]
+        label_columns = [
+            'finalPrice',
+            'score',
+            'change',
+        ]
+
+        featureFrame = pd.DataFrame(columns=feature_columns)
+        labelFrame = pd.DataFrame(columns=label_columns)
 
         for i in range(0, 1200):
             start = str(startDate)
@@ -52,32 +59,24 @@ class MonthLaterData:
             startingPrice = pastData.tail(1)["Close"][0]
 
             #Add row to dataframes
-            df2 = pd.DataFrame(data=[[featureAverages[3],
-                                     featureAverages[2],
-                                     featureAverages[1],
-                                     featureAverages[0],
-                                     autoCorrelations[0],
-                                     autoCorrelations[1],
-                                     autoCorrelations[2],
-                                     autoCorrelations[3],
-                                     featureVolumeAverages[3],
-                                     featureVolumeAverages[2],
-                                     featureVolumeAverages[1],
-                                     featureVolumeAverages[0],
-                                     startingPrice]],
-                               columns=['avg365',
-                                             'avg100',
-                                             'avg15',
-                                             'avg5',
-                                             'autocorrelation1',
-                                             'autocorrelation2',
-                                             'autocorrelation5',
-                                             'autocorrelation10',
-                                             'volAvg365',
-                                             'volAvg100',
-                                             'volAvg15',
-                                             'volAvg5',
-                                             'initialPrice'])
+            df2 = pd.DataFrame(
+                data=[[
+                    featureAverages[3],
+                    featureAverages[2],
+                    featureAverages[1],
+                    featureAverages[0],
+                    autoCorrelations[0],
+                    autoCorrelations[1],
+                    autoCorrelations[2],
+                    autoCorrelations[3],
+                    featureVolumeAverages[3],
+                    featureVolumeAverages[2],
+                    featureVolumeAverages[1],
+                    featureVolumeAverages[0],
+                    startingPrice,
+                ]],
+                columns=feature_columns,
+            )
 
             #If we run out of usable data, terminate
             if endYear == date.today().year and endMonth >= date.today().month:
@@ -109,13 +108,10 @@ class MonthLaterData:
                 finalPrice = metrics.getLastRow()
                 labels = [avgPrice, highestIncrease, highestDecrease, change, score, finalPrice]
 
-                df3 = pd.DataFrame(data=[[finalPrice,
-                                          score,
-                                          change
-                                          ]],
-                                   columns=['finalPrice',
-                                            'score',
-                                            'change'])
+                df3 = pd.DataFrame(
+                    data=[[finalPrice, score, change]],
+                    columns=label_columns,
+                )
 
                 featureFrame = pd.concat([featureFrame, df2])
                 labelFrame = pd.concat([labelFrame, df3])
@@ -129,5 +125,13 @@ class MonthLaterData:
         #featureFrame.to_csv(quote + 'features.csv')
         #labelFrame.to_csv(quote + 'labels.csv')
 
-        self.features = featureFrame.dropna()
-        self.labels = labelFrame.dropna()
+        # ensure features and labels remain aligned after dropping NaNs
+        featureFrame = featureFrame.reset_index(drop=True)
+        labelFrame = labelFrame.reset_index(drop=True)
+
+        valid_feature_rows = featureFrame.notna().all(axis=1)
+        valid_label_rows = labelFrame.notna().all(axis=1)
+        valid_rows = valid_feature_rows & valid_label_rows
+
+        self.features = featureFrame.loc[valid_rows].reset_index(drop=True)
+        self.labels = labelFrame.loc[valid_rows].reset_index(drop=True)

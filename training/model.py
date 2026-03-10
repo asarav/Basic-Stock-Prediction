@@ -1,14 +1,12 @@
 import pandas as pd
-from sklearn import svm
 from sklearn.linear_model import LinearRegression
-from sklearn.linear_model import Ridge
 import matplotlib.pyplot as plt
 from sklearn.metrics import explained_variance_score, max_error, mean_squared_error
-from sklearn.model_selection import train_test_split, cross_validate
+from sklearn.model_selection import cross_validate, TimeSeriesSplit
 import streamlit as st
 
 class Model:
-    def __init__(self, featureData, labelData, currentMonthData, quote='MFST', classifier=LinearRegression):
+    def __init__(self, featureData, labelData, currentMonthData, quote='MSFT', classifier=LinearRegression):
         self.features = featureData
         self.labels = labelData['finalPrice']
         self.quote = quote
@@ -20,11 +18,32 @@ class Model:
         self.clf.fit(self.features, self.labels)
 
     def trainWithCrossVal(self):
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.features, self.labels,
-                                                                                test_size=0.25, random_state=0)
+        # ensure chronological ordering for time-series data
+        features = self.features.sort_index()
+        labels = self.labels.loc[features.index]
+
+        # chronological hold-out: last 25% of observations as test set
+        test_size = int(len(features) * 0.25)
+        if test_size == 0:
+            raise ValueError("Not enough data points to create a time-series test split.")
+
+        self.X_train = features.iloc[:-test_size]
+        self.X_test = features.iloc[-test_size:]
+        self.y_train = labels.iloc[:-test_size]
+        self.y_test = labels.iloc[-test_size:]
+
         self.clf = self.classifier()
-        results = cross_validate(self.clf, self.features, self.labels, cv=7, verbose=1,
-                           scoring=['explained_variance', 'max_error', "neg_mean_squared_error"], n_jobs=-1)
+        # time-series aware cross-validation
+        tscv = TimeSeriesSplit(n_splits=7)
+        results = cross_validate(
+            self.clf,
+            features,
+            labels,
+            cv=tscv,
+            verbose=1,
+            scoring=['explained_variance', 'max_error', "neg_mean_squared_error"],
+            n_jobs=-1
+        )
         self.clf.fit(self.X_train, self.y_train)
         test_predictions = self.clf.predict(self.X_test)
 

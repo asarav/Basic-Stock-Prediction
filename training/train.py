@@ -11,9 +11,13 @@ from datetime import datetime
 from datetime import date
 import pandas as pd
 
+# Only show "GUARANTEED" gains/losses when the model fit is strong enough to trust the band.
+MIN_VARIANCE_SCORE_FOR_GUARANTEE = 0.5   # explained variance (higher = better fit)
+MAX_ERROR_PCT_FOR_GUARANTEE = 15.0       # error margin as % of price (lower = tighter band)
+
 class Train:
-    output = {}
     def __init__(self, quote=None, printGraph=False, callback=None, outputExcel=False, useSAndP=False, useRussell1000=False, monthsLater=1, streamlit=False):
+        self.output = {}
         self.printGraph = printGraph
         self.callback = callback
         self.outputExcel = outputExcel
@@ -57,11 +61,61 @@ class Train:
         else:
             self.runTraining(quote)
 
+    def _build_summary_frame(self, symbol, current_price, future_price, percent_increase, root_mse, error_percentage, floor, ceiling, variance_score):
+        return pd.DataFrame(
+            data=[[
+                symbol,
+                current_price,
+                future_price,
+                percent_increase,
+                root_mse,
+                error_percentage,
+                floor,
+                ceiling,
+                variance_score,
+            ]],
+            columns=[
+                'Symbol',
+                'Current Price',
+                'Future Price',
+                'Percent Increase',
+                'Error',
+                'Error Percentage',
+                'Floor',
+                'Ceiling',
+                'Variance Score',
+            ],
+        )
+
+    def _log_results(self, symbol, root_mse, error_percentage, floor, ceiling, variance_score):
+        print("Error Margin: ", root_mse)
+        if error_percentage:
+            print("Error Percentage: ", error_percentage)
+        print("Predicted Floor: ", floor)
+        print("Predicted Ceiling: ", ceiling)
+        print("Variance Score: ", variance_score)
+
+        current = self.output.get("CurrentPrice")
+        if current is None:
+            return
+
+        high_confidence = (
+            variance_score >= MIN_VARIANCE_SCORE_FOR_GUARANTEE
+            and error_percentage <= MAX_ERROR_PCT_FOR_GUARANTEE
+        )
+
+        if high_confidence:
+            if floor > current:
+                print(Fore.GREEN + "Predicted Gains GUARANTEED")
+                print(Style.RESET_ALL)
+                self.output["Message"] = "Predicted GAINS Highly Likely given Error values"
+            elif ceiling < current:
+                print(Fore.RED + "Predicted Losses GUARANTEED")
+                print(Style.RESET_ALL)
+                self.output["Message"] = "Predicted LOSSES Highly Likely given Error values"
+
     def runTraining(self, symbol):
         try:
-            #start = datetime.now()
-            #print(start.hour, ':', start.minute, ':', start.second, '.', start.microsecond)
-
             print("Retrieving Stock Data")
             data = oneMonthData.MonthLaterData(symbol, monthsLater=self.monthsLater)
 
@@ -69,66 +123,56 @@ class Train:
             labels = data.labels
 
             print("Training Model on Data")
-
             trainedModel = model.Model(features, labels, data.currentData, symbol, LinearRegression)
-
             print("Model Trained")
 
             results = trainedModel.trainWithCrossVal()
             self.output["CrossVal Results"] = results
+
             stock = stockData.StockData(symbol)
-            info = stock.info()
-            self.output["CurrentPrice"] = info["previous_close"]
-            self.output["Future Price"] = trainedModel.predictCurrentMonth()[0]
+            previous_close = stock.previous_close()
+            prediction = trainedModel.predictCurrentMonth()[0]
+
+            self.output["CurrentPrice"] = previous_close
+            self.output["Future Price"] = prediction
             self.output["Percent Increase"] = 0
-            if info["previous_close"] > 0:
-                self.output["Percent Increase"] = (trainedModel.predictCurrentMonth()[0]/info["previous_close"] - 1)*100
+
+            if previous_close is not None and previous_close > 0:
+                self.output["Percent Increase"] = (prediction / previous_close - 1) * 100
+
             print("Current Price: ", self.output["CurrentPrice"])
             print("Predicted Price: ", self.output["Future Price"])
             print("Predicted Percent Change in Price: ", self.output["Percent Increase"], "%")
 
             mse = results["test_mean_squared_error"]
-            rootMSE = math.sqrt(mse)
-            varianceScore = results["variance_score"]
+            root_mse = math.sqrt(mse)
+            variance_score = results["variance_score"]
 
-            print("Error Margin: ", rootMSE)
-            errorPercentage = 0
-            if self.output["CurrentPrice"] > 0:
-                errorPercentage = (rootMSE / self.output["CurrentPrice"]) * 100
-                print("Error Percentage: ", errorPercentage)
-            floor = self.output["Future Price"] - rootMSE
-            ceiling = self.output["Future Price"] + rootMSE
-            print("Predicted Floor: ", floor)
-            print("Predicted Ceiling: ", ceiling)
-            
-            print("Variance Score: ", varianceScore)
+            error_percentage = 0
+            if self.output["CurrentPrice"] is not None and self.output["CurrentPrice"] > 0:
+                error_percentage = (root_mse / self.output["CurrentPrice"]) * 100
 
-            if floor > self.output["CurrentPrice"]:
-                print(Fore.GREEN + "Predicted Gains GUARANTEED")
-                print(Style.RESET_ALL)
-                self.output["Message"] = "Predicted GAINS Highly Likely given Error values"
-            if ceiling < self.output["CurrentPrice"]:
-                print(Fore.RED + "Predicted Losses GUARANTEED")
-                print(Style.RESET_ALL)
-                self.output["Message"] = "Predicted LOSSES Highly Likely given Error values"
+            floor = self.output["Future Price"] - root_mse
+            ceiling = self.output["Future Price"] + root_mse
 
-            #end = datetime.now()
-            #print(end.hour, ':', end.minute, ':', end.second, '.', end.microsecond)
+            self._log_results(symbol, root_mse, error_percentage, floor, ceiling, variance_score)
 
             if self.printGraph:
                 trainedModel.comparePredictions(streamlit=self.streamlit)
                 if self.callback is not None:
                     self.callback()
-            return pd.DataFrame(data=[[symbol, self.output["CurrentPrice"], self.output["Future Price"], self.output["Percent Increase"], rootMSE, errorPercentage, floor, ceiling, varianceScore]],
-                               columns=['Symbol',
-                                        'Current Price',
-                                        'Future Price',
-                                        'Percent Increase',
-                                        'Error',
-                                        'Error Percentage',
-                                        'Floor',
-                                        'Ceiling',
-                                        'Variance Score'])
+
+            return self._build_summary_frame(
+                symbol,
+                self.output["CurrentPrice"],
+                self.output["Future Price"],
+                self.output["Percent Increase"],
+                root_mse,
+                error_percentage,
+                floor,
+                ceiling,
+                variance_score,
+            )
         except Exception as e:
             print(e)
             if "Data doesn't exist for startDate" in str(e):

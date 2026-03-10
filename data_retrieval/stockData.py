@@ -53,12 +53,45 @@ class StockData:
         startDate = datetime.date(year, 1, 1)
         return startDate, duration
 
-    # https://github.com/ranaroussi/yfinance/pull/371
     def info(self):
-        return self.stockData.fast_info
+        try:
+            # fast_info is preferred when available
+            return self.stockData.fast_info
+        except AttributeError:
+            # fallback to .info for older/newer yfinance versions
+            return self.stockData.info
 
     def events(self):
         return self.stockData.calendar
 
     def analystRecommendations(self):
         return self.stockData.recommendations
+
+    def previous_close(self):
+        """
+        Best-effort retrieval of the most recent valid close price.
+        Tries fast_info/info first, then falls back to recent historical data.
+        """
+        info = None
+        try:
+            info = self.info()
+        except Exception:
+            info = None
+
+        if isinstance(info, dict):
+            prev = info.get("previous_close")
+            if prev is not None:
+                return prev
+
+        # Fallback: try recent daily history
+        try:
+            hist = self.stockData.history(period="5d")
+            if not hist.empty and "Close" in hist.columns:
+                # take the last non-NaN close
+                close_series = hist["Close"].dropna()
+                if not close_series.empty:
+                    return float(close_series.iloc[-1])
+        except Exception:
+            pass
+
+        return None
